@@ -1,5 +1,7 @@
 const WHITELIST_IPS = process.env.WHITELIST_IPS ? process.env.WHITELIST_IPS.split(',') : null;
-const WHITELIST_PATH = process.env.WHITELIST_PATH ? new RegExp(process.env.WHITELIST_PATH) : null;
+
+// Validate and sanitize the WHITELIST_PATH value
+const WHITELIST_PATH = process.env.WHITELIST_PATH ? sanitizeRegexInput(process.env.WHITELIST_PATH) : null;
 
 const MAINTENANCE_PAGE = buildMaintenancePage();
 
@@ -11,10 +13,21 @@ const MAINTENANCE_PAGE = buildMaintenancePage();
 function buildMaintenancePage() {
   // Maintenance page HTML content...
   return `
-  <!DOCTYPE html>
-  ...
-  </html>
+    <!DOCTYPE html>
+    ...
+    </html>
   `;
+}
+
+/**
+ * Sanitizes the input string to prevent regular expression injection.
+ *
+ * @param {string} input - The input string to sanitize.
+ * @return {string} - The sanitized input string.
+ */
+function sanitizeRegexInput(input) {
+  // Remove any special characters that have special meaning in regular expressions
+  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
@@ -34,7 +47,7 @@ function isWhitelistedIp(ip) {
  * @return {boolean} - Returns true if the path is whitelisted, otherwise false.
  */
 function isWhitelistedPath(requestPath) {
-  return WHITELIST_PATH && WHITELIST_PATH.test(requestPath);
+  return WHITELIST_PATH && new RegExp(WHITELIST_PATH).test(requestPath);
 }
 
 /**
