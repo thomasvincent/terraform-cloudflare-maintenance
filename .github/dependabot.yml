@@ -1,26 +1,5 @@
 version: 2
-
 updates:
-  - package-ecosystem: 'npm'
+  - package-ecosystem: 'github-actions'
     directory: '/'
-    schedule:
-      interval: 'daily'
-    open-pull-requests-limit: 5
-    labels:
-      - 'dependencies'
-    automerge:
-      enabled: true
-      method: 'rebase'
-    actions:
-      - name: 'npm ci'
-        uses: 'actions/npm@v2'
-        with:
-          args: 'ci'
-      - name: 'npm run test'
-        uses: 'actions/npm@v2'
-        with:
-          args: 'run test'
-      - name: 'npm run build'
-        uses: 'actions/npm@v2'
-        with:
-          args: 'run build'
+    schedule: { interval: 'daily' }
