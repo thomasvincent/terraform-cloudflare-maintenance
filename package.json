@@ -11,7 +11,7 @@
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
-    "@cloudflare/workers-types": "latest",
+    "@cloudflare/workers-types": "4.20241112.0",
     "ts-loader": "latest",
     "typescript": "latest"
   },
