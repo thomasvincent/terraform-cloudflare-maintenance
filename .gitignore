@@ -1,0 +1,20 @@
+# Terraform
+.terraform/
+.terraform.tfstate
+.terraform.tfstate.backup
+*.tfstate
+*.tfstate.backup
+terraform.tfvars
+*.tfvars
+
+# Node / Yarn
+node_modules/
+dist/
+npm-debug.log
+yarn-error.log
+
+# VSCode
+.vscode/
+
+# MacOS
+.DS_Store

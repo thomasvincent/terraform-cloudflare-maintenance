@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # NPM for Cloudflare Worker
+  - package-ecosystem: "npm"
+    directory: "/worker"
+    schedule:
+      interval: "daily"
+
+  # Terraform for root module
+  - package-ecosystem: "terraform"
+    directory: "/"
+    schedule:
+      interval: "daily"

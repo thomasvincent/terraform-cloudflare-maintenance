@@ -1,0 +1,6 @@
+# Each line is a file pattern followed by one or more owners (user or team).
+# Requires branch protection with "Require review from Code Owners" for auto-approval gating.
+
+# Example owners:
+# *.tf @my-org/terraform-team
+# worker/src/ @my-org/frontend-team

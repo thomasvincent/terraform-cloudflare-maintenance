@@ -1,0 +1,41 @@
+name: "CI"
+on:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+
+      - name: Install and Build Worker
+        run: |
+          cd worker
+          npm install
+          npm run build
+
+      - name: Test Worker
+        run: |
+          cd worker
+          npm test
+
+      - name: Terraform Init & Validate
+        run: |
+          terraform init
+          terraform validate
+
+      # (Optional) Terraform Plan
+      # - name: Terraform Plan
+      #   run: terraform plan
+
+      - name: Code Coverage Placeholder
+        run: echo "Collect coverage here (e.g., Jest, c8, nyc, coverage reports, etc.)"

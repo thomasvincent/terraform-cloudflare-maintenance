@@ -1,0 +1,13 @@
+{
+  "name": "cloudflare-maintenance-worker",
+  "version": "1.0.0",
+  "description": "A Cloudflare Worker for serving a modern maintenance page.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo 'TODO: add tests here' && exit 0"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.5"
+  }
+}
