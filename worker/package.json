@@ -8,6 +8,6 @@
     "test": "echo 'TODO: add tests here' && exit 0"
   },
   "devDependencies": {
-    "typescript": "^4.9.5"
+    "typescript": "^5.7.3"
   }
 }
