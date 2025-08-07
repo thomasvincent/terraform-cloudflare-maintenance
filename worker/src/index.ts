@@ -49,7 +49,7 @@ addEventListener("fetch", (event) => {
 
   // Route API requests differently
   if (url.pathname.startsWith('/api/')) {
-    // @ts-ignore - KVNamespace not in types
+    // @ts-expect-error - KVNamespace not in types
     fetchEvent.respondWith(handleApiRequest(fetchEvent.request, typedConfig.api_key || 'default_api_key', MAINTENANCE_CONFIG));
   } else {
     fetchEvent.respondWith(handleRequest(fetchEvent.request, fetchEvent));
@@ -160,10 +160,10 @@ function logRequest(request: Request, event: FetchEvent): void {
   const url = new URL(request.url);
   const clientLanguage = detectLanguage(request);
 
-  // @ts-ignore - Analytics Engine is not in the types yet
+  // @ts-expect-error - Analytics Engine is not in the types yet
   if (typeof MAINTENANCE_ANALYTICS !== 'undefined') {
     event.waitUntil(
-      // @ts-ignore
+      // @ts-expect-error - MAINTENANCE_ANALYTICS global binding
       MAINTENANCE_ANALYTICS.writeDataPoint({
         blobs: [
           url.pathname,

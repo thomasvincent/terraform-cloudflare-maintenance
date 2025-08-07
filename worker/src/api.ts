@@ -6,7 +6,7 @@
 interface ApiResponse {
   success: boolean;
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
 // Interface for maintenance window updates
@@ -119,7 +119,7 @@ export async function handleApiRequest(
  * @param namespace - The KV namespace
  * @returns Promise<Response>
  */
-async function handleStatusRequest(namespace: KVNamespace): Promise<Response> {
+async function handleStatusRequest(_namespace: KVNamespace): Promise<Response> {
   return jsonResponse({ 
     success: true, 
     message: 'Maintenance API is operational',
