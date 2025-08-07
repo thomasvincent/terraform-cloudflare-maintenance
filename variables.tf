@@ -88,7 +88,7 @@ variable "maintenance_window" {
   })
   default = null
   validation {
-    condition     = var.maintenance_window == null || (can(parsedate(var.maintenance_window.start_time, "RFC3339")) && can(parsedate(var.maintenance_window.end_time, "RFC3339")))
+    condition     = var.maintenance_window == null || (can(timeadd(var.maintenance_window.start_time, "0s")) && can(timeadd(var.maintenance_window.end_time, "0s")))
     error_message = "Maintenance window times must be in RFC3339 format (e.g., 2025-04-06T08:00:00Z)."
   }
 }
