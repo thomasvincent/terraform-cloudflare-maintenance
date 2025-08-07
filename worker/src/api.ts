@@ -193,7 +193,7 @@ async function handleUpdateMaintenanceStatus(
     }
     
     // Fetch current config
-    const currentConfig = (await namespace.get('maintenance_config', { type: 'json' })) as MaintenanceConfig || {};
+    const currentConfig = (await namespace.get('maintenance_config', { type: 'json' }) || {}) as MaintenanceConfig;
 
     // Update config
     const newConfig: MaintenanceConfig = {
