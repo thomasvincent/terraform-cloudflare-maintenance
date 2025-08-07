@@ -43,15 +43,16 @@ try {
 import { handleApiRequest } from './api';
 
 // Event listener for incoming requests
-addEventListener("fetch", (event: FetchEvent) => {
-  const url = new URL(event.request.url);
-  
+addEventListener("fetch", (event) => {
+  const fetchEvent = event as FetchEvent;
+  const url = new URL(fetchEvent.request.url);
+
   // Route API requests differently
   if (url.pathname.startsWith('/api/')) {
     // @ts-ignore - KVNamespace not in types
-    event.respondWith(handleApiRequest(event.request, typedConfig.api_key || 'default_api_key', MAINTENANCE_CONFIG));
+    fetchEvent.respondWith(handleApiRequest(fetchEvent.request, typedConfig.api_key || 'default_api_key', MAINTENANCE_CONFIG));
   } else {
-    event.respondWith(handleRequest(event.request, event));
+    fetchEvent.respondWith(handleRequest(fetchEvent.request, fetchEvent));
   }
 });
 
