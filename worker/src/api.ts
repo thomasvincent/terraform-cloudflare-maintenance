@@ -16,6 +16,17 @@ interface MaintenanceWindowUpdate {
   end_time?: string;
 }
 
+// Interface for stored maintenance configuration
+interface MaintenanceConfig {
+  enabled: boolean;
+  updated_at: string;
+  maintenance_window?: {
+    start_time: string;
+    end_time: string;
+  };
+  [key: string]: unknown;
+}
+
 /**
  * Validate API key from request
  * @param request - The incoming request
@@ -182,15 +193,15 @@ async function handleUpdateMaintenanceStatus(
     }
     
     // Fetch current config
-    const currentConfig = await namespace.get('maintenance_config', { type: 'json' }) || {};
-    
+    const currentConfig = (await namespace.get('maintenance_config', { type: 'json' }) || {}) as MaintenanceConfig;
+
     // Update config
-    const newConfig = {
+    const newConfig: MaintenanceConfig = {
       ...currentConfig,
       enabled: body.enabled,
       updated_at: new Date().toISOString()
     };
-    
+
     // Update maintenance window if provided
     if (body.start_time && body.end_time) {
       newConfig.maintenance_window = {
@@ -198,7 +209,7 @@ async function handleUpdateMaintenanceStatus(
         end_time: body.end_time
       };
     }
-    
+
     // Save to KV
     await namespace.put('maintenance_config', JSON.stringify(newConfig));
     
