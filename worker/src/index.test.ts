@@ -62,9 +62,6 @@ describe('Maintenance Worker', () => {
   const originalFetch = global.fetch;
   const mockFetch = vi.fn();
   
-  // Mock headers
-  const mockHeaders = new Map();
-  
   // Mock request
   const createMockRequest = (ip?: string, acceptLanguage?: string) => {
     const headers = new Map();
@@ -128,7 +125,7 @@ describe('Maintenance Worker', () => {
       const request = createMockRequest();
       const event = createMockEvent();
       
-      const response = await handleRequest(request, event);
+      await handleRequest(request, event);
       
       // Restore the original config
       configModule.default.enabled = originalEnabled;
@@ -140,7 +137,7 @@ describe('Maintenance Worker', () => {
       const request = createMockRequest('192.168.1.1');
       const event = createMockEvent();
       
-      const response = await handleRequest(request, event);
+      await handleRequest(request, event);
       
       expect(mockFetch).toHaveBeenCalledWith(request);
     });
