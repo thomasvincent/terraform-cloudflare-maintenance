@@ -144,3 +144,21 @@ variable "api_key" {
   default     = ""
   sensitive   = true
 }
+
+variable "create_dns_record" {
+  description = "Whether to create a DNS record for the maintenance page"
+  type        = bool
+  default     = false
+}
+
+variable "dns_record_name" {
+  description = "DNS record name for the maintenance page"
+  type        = string
+  default     = "maintenance"
+}
+
+variable "create_page_rule" {
+  description = "Whether to create a page rule for cache control"
+  type        = bool
+  default     = false
+}
