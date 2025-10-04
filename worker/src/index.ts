@@ -50,7 +50,7 @@ addEventListener("fetch", (event) => {
   // Route API requests differently
   if (url.pathname.startsWith('/api/')) {
     // @ts-expect-error - KVNamespace not in types
-    fetchEvent.respondWith(handleApiRequest(fetchEvent.request, typedConfig.api_key || 'default_api_key', MAINTENANCE_CONFIG));
+    fetchEvent.respondWith(handleApiRequest(fetchEvent.request, typedConfig.api_key || '', MAINTENANCE_CONFIG));
   } else {
     fetchEvent.respondWith(handleRequest(fetchEvent.request, fetchEvent));
   }

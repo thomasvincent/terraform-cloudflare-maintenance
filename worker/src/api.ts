@@ -34,6 +34,11 @@ interface MaintenanceConfig {
  * @returns boolean
  */
 function validateApiKey(request: Request, expectedApiKey: string): boolean {
+  // Reject if no API key is configured
+  if (!expectedApiKey || expectedApiKey.length === 0) {
+    return false;
+  }
+  
   const authorization = request.headers.get('Authorization');
   
   if (!authorization) {
