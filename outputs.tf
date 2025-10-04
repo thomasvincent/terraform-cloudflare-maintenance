@@ -5,7 +5,7 @@ output "worker_script_name" {
 
 output "worker_route_pattern" {
   description = "Cloudflare route pattern for the maintenance page"
-  value       = var.enabled ? cloudflare_workers_route.maintenance_route[0].pattern : "Maintenance mode disabled"
+  value       = try(cloudflare_workers_route.maintenance_route[0].pattern, null)
 }
 
 output "maintenance_status" {
@@ -15,12 +15,12 @@ output "maintenance_status" {
 
 output "maintenance_page_url" {
   description = "URL to access the maintenance page directly"
-  value       = var.enabled ? "https://maintenance.${trimsuffix(trimprefix(var.worker_route, "*."), "/*")}" : "Maintenance mode disabled"
+  value       = var.enabled ? "https://maintenance.${trimsuffix(trimprefix(var.worker_route, "*."), "/*")}" : null
 }
 
 output "dns_record_id" {
   description = "ID of the maintenance page DNS record (if enabled)"
-  value       = var.enabled ? cloudflare_dns_record.maintenance[0].id : "No DNS record created"
+  value       = try(cloudflare_dns_record.maintenance[0].id, null)
 }
 
 output "allowed_ips" {
@@ -52,17 +52,17 @@ output "environment" {
 
 output "ruleset_id" {
   description = "ID of the ruleset for bypass configuration (if enabled)"
-  value       = var.enabled && (length(var.allowed_ips) > 0 || length(var.allowed_ip_ranges) > 0 || length(var.allowed_regions) > 0) ? cloudflare_ruleset.maintenance_bypass[0].id : "No ruleset created"
+  value       = try(cloudflare_ruleset.maintenance_bypass[0].id, null)
 }
 
 output "rate_limit_id" {
   description = "ID of the rate limit rule (if enabled) - temporarily disabled"
-  value       = "Rate limiting temporarily disabled pending provider update"
+  value       = null # Rate limiting temporarily disabled pending provider update
 }
 
 output "api_endpoint" {
   description = "API endpoint for managing maintenance mode"
-  value       = var.enabled ? "https://${trimsuffix(trimprefix(var.worker_route, "*."), "/*")}/api/" : "Maintenance mode disabled"
+  value       = var.enabled ? "https://${trimsuffix(trimprefix(var.worker_route, "*."), "/*")}/api/" : null
 }
 
 output "api_key" {

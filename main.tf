@@ -1,15 +1,18 @@
-# Main Terraform configuration for Cloudflare maintenance mode
+/**
+ * Cloudflare Maintenance Mode Module
+ * 
+ * This module deploys a maintenance page using Cloudflare Workers
+ * with support for IP allowlisting, scheduled windows, and multi-language content.
+ */
 
-provider "cloudflare" {
-  api_token = var.cloudflare_api_token
-}
-
+# Generate random API key if not provided
 resource "random_password" "api_key" {
   length           = 32
   special          = true
   override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
+# Configuration for the worker script
 locals {
   worker_vars = {
     enabled              = var.enabled
