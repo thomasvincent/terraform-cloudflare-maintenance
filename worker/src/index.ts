@@ -136,13 +136,13 @@ export function detectLanguage(request: Request): string {
     .map(lang => {
       const [code, q = 'q=1.0'] = lang.trim().split(';');
       const quality = parseFloat(q.substring(2)) || 0;
-      return { code: code.substring(0, 2).toLowerCase(), quality };
+      return { code: code?.substring(0, 2).toLowerCase() || defaultLanguage, quality };
     })
     .sort((a, b) => b.quality - a.quality);
-  
+
   // Try to find the first supported language
   for (const { code } of preferredLanguages) {
-    if (translations[code]) {
+    if (code && translations[code]) {
       return code;
     }
   }
@@ -190,8 +190,8 @@ import { applySecurityHeaders, isBot, createBotResponse } from './security';
  */
 function serveMaintenancePage(request: Request): Response {
   const language = detectLanguage(request);
-  const trans = translations[language] || translations[defaultLanguage];
-  
+  const trans = translations[language] || translations[defaultLanguage]!;
+
   // Handle bots differently - provide simpler response with appropriate headers
   if (isBot(request)) {
     return createBotResponse(
@@ -225,7 +225,7 @@ function serveMaintenancePage(request: Request): Response {
  */
 function generateMaintenanceHTML(language: string = defaultLanguage): string {
   // Get translation for the selected language or fall back to default
-  const trans: Translation = translations[language] || translations[defaultLanguage];
+  const trans: Translation = translations[language] || translations[defaultLanguage]!;
   
   // Get configuration
   const title = typedConfig.maintenance_title || trans.title;

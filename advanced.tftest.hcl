@@ -36,12 +36,12 @@ run "verify_staging_environment" {
   }
 
   assert {
-    condition     = output.worker_route_pattern != "Maintenance mode disabled"
+    condition     = output.worker_route_pattern != null
     error_message = "Worker route should be created for staging environment"
   }
 
   assert {
-    condition     = output.ruleset_id != "No ruleset created"
+    condition     = output.ruleset_id != null
     error_message = "Ruleset should be created when maintenance is enabled with allowed IPs"
   }
 }
@@ -82,12 +82,12 @@ run "verify_production_environment" {
   }
 
   assert {
-    condition     = output.worker_route_pattern != "Maintenance mode disabled"
+    condition     = output.worker_route_pattern != null
     error_message = "Worker route should be created for production environment"
   }
 
   assert {
-    condition     = output.ruleset_id != "No ruleset created"
+    condition     = output.ruleset_id != null
     error_message = "Ruleset should be created when allowed IPs are specified"
   }
 }
@@ -157,7 +157,7 @@ run "verify_ip_concatenation" {
   }
 
   assert {
-    condition     = output.ruleset_id != "No ruleset created"
+    condition     = output.ruleset_id != null
     error_message = "Ruleset should be created with multiple IPs"
   }
 

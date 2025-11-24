@@ -28,7 +28,7 @@ run "verify_worker_script_configuration" {
   }
 
   assert {
-    condition     = output.worker_route_pattern != "Maintenance mode disabled"
+    condition     = output.worker_route_pattern != null
     error_message = "Worker route should be created when maintenance is enabled"
   }
 
@@ -38,7 +38,7 @@ run "verify_worker_script_configuration" {
   }
 
   assert {
-    condition     = output.api_endpoint != "Maintenance mode disabled"
+    condition     = output.api_endpoint != null
     error_message = "API endpoint should be configured when maintenance is enabled"
   }
 }
@@ -86,7 +86,7 @@ run "verify_worker_config_with_customization" {
   }
 
   assert {
-    condition     = output.maintenance_page_url != "Maintenance mode disabled"
+    condition     = output.maintenance_page_url != null
     error_message = "Maintenance page URL should be configured with custom settings"
   }
 }
@@ -117,7 +117,7 @@ run "verify_worker_with_allowed_ips" {
   }
 
   assert {
-    condition     = output.ruleset_id != "No ruleset created"
+    condition     = output.ruleset_id != null
     error_message = "Ruleset should be created for IP bypass when allowed IPs are specified"
   }
 
@@ -153,7 +153,7 @@ run "verify_worker_with_ip_ranges" {
   }
 
   assert {
-    condition     = output.ruleset_id != "No ruleset created"
+    condition     = output.ruleset_id != null
     error_message = "Ruleset should be created for IP range bypass"
   }
 
@@ -189,7 +189,7 @@ run "verify_worker_with_regional_bypass" {
   }
 
   assert {
-    condition     = output.ruleset_id != "No ruleset created"
+    condition     = output.ruleset_id != null
     error_message = "Ruleset should be created for regional bypass"
   }
 
@@ -234,22 +234,22 @@ run "verify_disabled_worker_configuration" {
   }
 
   assert {
-    condition     = output.worker_route_pattern == "Maintenance mode disabled"
+    condition     = output.worker_route_pattern == null
     error_message = "Worker route should not be configured when maintenance is disabled"
   }
 
   assert {
-    condition     = output.dns_record_id == "No DNS record created"
+    condition     = output.dns_record_id == null
     error_message = "DNS record should not be created when maintenance is disabled"
   }
 
   assert {
-    condition     = output.ruleset_id == "No ruleset created"
+    condition     = output.ruleset_id == null
     error_message = "Ruleset should not be created when maintenance is disabled"
   }
 
   assert {
-    condition     = output.api_endpoint == "Maintenance mode disabled"
+    condition     = output.api_endpoint == null
     error_message = "API endpoint should be disabled when maintenance is disabled"
   }
 }

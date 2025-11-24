@@ -26,7 +26,7 @@ run "test_enabled_maintenance" {
   }
 
   assert {
-    condition     = output.worker_route_pattern != "Maintenance mode disabled"
+    condition     = output.worker_route_pattern != null
     error_message = "Worker route should be created when maintenance is enabled"
   }
 
@@ -67,17 +67,17 @@ run "test_disabled_maintenance" {
   }
 
   assert {
-    condition     = output.worker_route_pattern == "Maintenance mode disabled"
-    error_message = "Worker route should indicate disabled when maintenance is disabled"
+    condition     = output.worker_route_pattern == null
+    error_message = "Worker route should be null when maintenance is disabled"
   }
 
   assert {
-    condition     = output.maintenance_page_url == "Maintenance mode disabled"
-    error_message = "Maintenance page URL should indicate disabled when maintenance is disabled"
+    condition     = output.maintenance_page_url == null
+    error_message = "Maintenance page URL should be null when maintenance is disabled"
   }
 
   assert {
-    condition     = output.dns_record_id == "No DNS record created"
-    error_message = "DNS record should not be created when maintenance is disabled"
+    condition     = output.dns_record_id == null
+    error_message = "DNS record should be null when maintenance is disabled"
   }
 }

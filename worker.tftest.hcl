@@ -31,7 +31,7 @@ run "verify_worker_script_configuration" {
   }
 
   assert {
-    condition     = output.worker_route_pattern != "Maintenance mode disabled"
+    condition     = output.worker_route_pattern != null
     error_message = "Worker route should be configured when enabled"
   }
 }
@@ -104,7 +104,7 @@ run "verify_worker_secret_binding" {
   }
 
   assert {
-    condition     = output.ruleset_id != "No ruleset created"
+    condition     = output.ruleset_id != null
     error_message = "Ruleset should be created when allowed IPs are specified"
   }
 }
@@ -134,7 +134,7 @@ run "verify_worker_analytics_binding" {
   }
 
   assert {
-    condition     = output.api_endpoint != "Maintenance mode disabled"
+    condition     = output.api_endpoint != null
     error_message = "API endpoint should be configured when maintenance is enabled"
   }
 }
@@ -194,17 +194,17 @@ run "verify_disabled_worker_configuration" {
   }
 
   assert {
-    condition     = output.worker_route_pattern == "Maintenance mode disabled"
+    condition     = output.worker_route_pattern == null
     error_message = "Worker route should not be created when maintenance is disabled"
   }
 
   assert {
-    condition     = output.dns_record_id == "No DNS record created"
+    condition     = output.dns_record_id == null
     error_message = "DNS record should not be created when maintenance is disabled"
   }
 
   assert {
-    condition     = output.ruleset_id == "No ruleset created"
+    condition     = output.ruleset_id == null
     error_message = "Ruleset should not be created when maintenance is disabled"
   }
 }

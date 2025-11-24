@@ -44,12 +44,12 @@ run "verify_staging_environment" {
   }
 
   assert {
-    condition     = output.worker_route_pattern != "Maintenance mode disabled"
+    condition     = output.worker_route_pattern != null
     error_message = "Worker route should be configured in staging environment"
   }
 
   assert {
-    condition     = output.ruleset_id != "No ruleset created"
+    condition     = output.ruleset_id != null
     error_message = "Ruleset should be created for IP bypass in staging environment"
   }
 
@@ -108,12 +108,12 @@ run "verify_production_environment" {
   }
 
   assert {
-    condition     = output.worker_route_pattern == "Maintenance mode disabled"
+    condition     = output.worker_route_pattern == null
     error_message = "Worker route should not be configured in production environment when disabled"
   }
 
   assert {
-    condition     = output.ruleset_id == "No ruleset created"
+    condition     = output.ruleset_id == null
     error_message = "Ruleset should not be created in production environment when disabled"
   }
 }
@@ -194,7 +194,7 @@ run "verify_ip_configuration" {
   }
 
   assert {
-    condition     = output.ruleset_id != "No ruleset created"
+    condition     = output.ruleset_id != null
     error_message = "Ruleset should be created when allowed IPs and regions are specified"
   }
 }
