@@ -2,6 +2,7 @@
 
 run "verify_staging_environment" {
   variables {
+    cloudflare_api_token  = "0123456789abcdef0123456789abcdef01234567"
     cloudflare_account_id = "test-account-id"
     cloudflare_zone_id    = "test-zone-id"
     enabled               = true
@@ -48,6 +49,7 @@ run "verify_staging_environment" {
 
 run "verify_production_environment" {
   variables {
+    cloudflare_api_token  = "0123456789abcdef0123456789abcdef01234567"
     cloudflare_account_id = "test-account-id"
     cloudflare_zone_id    = "test-zone-id"
     enabled               = true
@@ -94,6 +96,7 @@ run "verify_production_environment" {
 
 run "verify_rfc3339_date_validation" {
   variables {
+    cloudflare_api_token  = "0123456789abcdef0123456789abcdef01234567"
     cloudflare_account_id = "test-account-id"
     cloudflare_zone_id    = "test-zone-id"
     enabled               = true
@@ -133,6 +136,7 @@ run "verify_rfc3339_date_validation" {
 
 run "verify_ip_concatenation" {
   variables {
+    cloudflare_api_token  = "0123456789abcdef0123456789abcdef01234567"
     cloudflare_account_id = "test-account-id"
     cloudflare_zone_id    = "test-zone-id"
     enabled               = true

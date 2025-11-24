@@ -3,6 +3,7 @@
 run "verify_worker_script_configuration" {
   # Define variables for module under test
   variables {
+    cloudflare_api_token  = "0123456789abcdef0123456789abcdef01234567"
     cloudflare_account_id = "test-account-id"
     cloudflare_zone_id    = "test-zone-id"
     enabled               = true
@@ -39,6 +40,7 @@ run "verify_worker_script_configuration" {
 run "verify_worker_config_with_customization" {
   # Define variables for module under test
   variables {
+    cloudflare_api_token  = "0123456789abcdef0123456789abcdef01234567"
     cloudflare_account_id = "test-account-id"
     cloudflare_zone_id    = "test-zone-id"
     enabled               = true
@@ -80,6 +82,7 @@ run "verify_worker_config_with_customization" {
 
 run "verify_worker_secret_binding" {
   variables {
+    cloudflare_api_token  = "0123456789abcdef0123456789abcdef01234567"
     cloudflare_account_id = "test-account-id"
     cloudflare_zone_id    = "test-zone-id"
     enabled               = true
@@ -111,6 +114,7 @@ run "verify_worker_secret_binding" {
 
 run "verify_worker_analytics_binding" {
   variables {
+    cloudflare_api_token  = "0123456789abcdef0123456789abcdef01234567"
     cloudflare_account_id = "test-account-id"
     cloudflare_zone_id    = "test-zone-id"
     enabled               = true
@@ -141,6 +145,7 @@ run "verify_worker_analytics_binding" {
 
 run "verify_kv_namespace" {
   variables {
+    cloudflare_api_token  = "0123456789abcdef0123456789abcdef01234567"
     cloudflare_account_id = "test-account-id"
     cloudflare_zone_id    = "test-zone-id"
     enabled               = true
@@ -171,6 +176,7 @@ run "verify_kv_namespace" {
 
 run "verify_disabled_worker_configuration" {
   variables {
+    cloudflare_api_token  = "0123456789abcdef0123456789abcdef01234567"
     cloudflare_account_id = "test-account-id"
     cloudflare_zone_id    = "test-zone-id"
     enabled               = false
