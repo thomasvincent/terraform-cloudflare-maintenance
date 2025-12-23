@@ -1,0 +1,34 @@
+name: Terraform CI
+on:
+  pull_request:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+      - name: Terraform fmt (recursive)
+        run: terraform fmt -check -recursive
+      - name: Terraform validate (all modules)
+        shell: bash
+        run: |
+          set -euo pipefail
+          find . -type f -name '*.tf' -printf '%h\n' | sort -u | while read -r d; do
+            echo "Validating $d"
+            (cd "$d" && terraform init -backend=false -input=false -no-color && terraform validate -no-color)
+          done
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.54.0
+      - name: Run TFLint
+        run: tflint --recursive
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.6
+        with:
+          soft_fail: true
