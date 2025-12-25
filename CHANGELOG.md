@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- CI: Add GitHub Actions workflow (fmt/validate, tflint, tfsec soft-fail). No functional module changes.
+
 ## [3.0.0] - 2025-05-03
 
 ### Added
