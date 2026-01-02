@@ -18,7 +18,12 @@ async function handleRequest(request) {
   // Check if this IP is on the VIP list (developers, ops team, that one stakeholder
   // who needs to "just check one thing real quick")
   const clientIP = request.headers.get('CF-Connecting-IP')
-  const allowedIPs = JSON.parse(ALLOWED_IPS || '[]')
+  let allowedIPs = []
+  try {
+    allowedIPs = JSON.parse(ALLOWED_IPS || '[]')
+  } catch (e) {
+    // Invalid JSON, skip IP check
+  }
   if (clientIP && allowedIPs.includes(clientIP)) {
     // You're on the list, come on in!
     return fetch(request)
@@ -26,7 +31,12 @@ async function handleRequest(request) {
 
   // Check if the request is from an allowed region
   const country = request.cf?.country
-  const allowedRegions = JSON.parse(ALLOWED_REGIONS || '[]')
+  let allowedRegions = []
+  try {
+    allowedRegions = JSON.parse(ALLOWED_REGIONS || '[]')
+  } catch (e) {
+    // Invalid JSON, skip region check
+  }
   if (country && allowedRegions.includes(country)) {
     // Region is allowed, bypass maintenance
     return fetch(request)
