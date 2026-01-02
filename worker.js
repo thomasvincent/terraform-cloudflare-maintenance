@@ -45,13 +45,20 @@ async function handleRequest(request) {
   // Validate and sanitize logo URL to prevent XSS
   let logoHtml = ''
   if (LOGO_URL && isValidHttpsUrl(LOGO_URL)) {
-    const sanitizedUrl = LOGO_URL.replace(/['"<>`&]/g, '')
-    logoHtml = `<img src="${sanitizedUrl}" alt="Logo" style="max-width: 200px; margin-bottom: 1rem;">`
+    // Additional check for javascript: and data: URIs
+    const lowerUrl = LOGO_URL.toLowerCase()
+    if (!lowerUrl.startsWith('javascript:') && !lowerUrl.startsWith('data:')) {
+      const sanitizedUrl = LOGO_URL.replace(/['"<>`&]/g, '')
+      logoHtml = `<img src="${sanitizedUrl}" alt="Logo" style="max-width: 200px; margin-bottom: 1rem;">`
+    }
   }
   
   // Alright, time to show everyone the "We'll be right back" page
   // This HTML is nicer than the default 503 error at least
   const customStyles = CUSTOM_CSS || ''
+  
+  // Sanitize contact email to prevent XSS
+  const sanitizedEmail = sanitizeEmail(CONTACT_EMAIL || '')
   
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -90,7 +97,7 @@ async function handleRequest(request) {
     <h1>${MAINTENANCE_TITLE || 'Maintenance Mode'}</h1>
     <p>${MAINTENANCE_MESSAGE || 'We are currently performing scheduled maintenance. We will be back shortly.'}</p>
     ${getMaintenanceWindowMessage()}
-    ${CONTACT_EMAIL ? `<p class="contact">Contact: <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></p>` : ''}
+    ${sanitizedEmail ? `<p class="contact">Contact: <a href="mailto:${sanitizedEmail}">${sanitizedEmail}</a></p>` : ''}
   </div>
 </body>
 </html>`
@@ -149,4 +156,14 @@ function isValidHttpsUrl(url) {
   } catch (e) {
     return false
   }
+}
+
+function sanitizeEmail(email) {
+  // Basic email validation and sanitization
+  const emailRegex = /^[^\s@<>'"]+@[^\s@<>'"]+\.[^\s@<>'"]+$/
+  if (!emailRegex.test(email)) {
+    return ''
+  }
+  // Remove potentially dangerous characters
+  return email.replace(/[<>'"&]/g, '')
 }
