@@ -35,7 +35,7 @@ async function handleRequest(request) {
   // Validate and sanitize logo URL to prevent XSS
   let logoHtml = ''
   if (LOGO_URL && isValidHttpsUrl(LOGO_URL)) {
-    const sanitizedUrl = LOGO_URL.replace(/['"<>]/g, '')
+    const sanitizedUrl = LOGO_URL.replace(/['"<>`&]/g, '')
     logoHtml = `<img src="${sanitizedUrl}" alt="Logo" style="max-width: 200px; margin-bottom: 1rem;">`
   }
   

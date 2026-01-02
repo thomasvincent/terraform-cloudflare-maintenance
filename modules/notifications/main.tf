@@ -34,15 +34,18 @@ resource "null_resource" "notification" {
 }
 
 locals {
-  # Create notification commands for each URL
+  # Categorize notification URLs by type
+  slack_urls      = [for url in var.notification_urls : url if startswith(url, "slack://")]
+  pagerduty_urls  = [for url in var.notification_urls : url if startswith(url, "pagerduty://")]
+  webhook_urls    = [for url in var.notification_urls : url if startswith(url, "webhook://")]
+
+  # Create notification commands for each URL with proper type detection
   notification_commands = {
     for idx, url in var.notification_urls :
-    idx => (
-      startswith(url, "slack://") ? replace(local.slack_notification_template, "{{URL}}", replace(url, "slack://", "https://hooks.slack.com/services/")) :
-      startswith(url, "pagerduty://") ? replace(local.pagerduty_notification_template, "{{KEY}}", replace(url, "pagerduty://", "")) :
-      startswith(url, "webhook://") ? replace(local.webhook_notification_template, "{{URL}}", replace(url, "webhook://", "")) :
-      "echo 'Unknown notification type: ${url}'"
-    )
+    idx => contains(local.slack_urls, url) ? replace(local.slack_notification_template, "{{URL}}", replace(url, "slack://", "https://hooks.slack.com/services/")) :
+    contains(local.pagerduty_urls, url) ? replace(local.pagerduty_notification_template, "{{KEY}}", replace(url, "pagerduty://", "")) :
+    contains(local.webhook_urls, url) ? replace(local.webhook_notification_template, "{{URL}}", replace(url, "webhook://", "")) :
+    "echo 'Unknown notification type: ${url}'"
   }
 
   # Slack notification template

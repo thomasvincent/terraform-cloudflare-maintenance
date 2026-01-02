@@ -93,14 +93,10 @@ resource "cloudflare_ruleset" "maintenance_bypass" {
     action_parameters {
       phases = ["http_request_firewall_managed", "http_ratelimit", "http_request_firewall_custom"]
     }
-    expression = join(" or ", concat(
-      length(var.allowed_ips) > 0 ? [
-        format("(ip.src in {%s})", join(" ", var.allowed_ips))
-      ] : [],
-      length(var.allowed_regions) > 0 ? [
-        format("(ip.geoip.country in {%s})", join(" ", var.allowed_regions))
-      ] : []
-    ))
+    expression = join(" or ", compact([
+      length(var.allowed_ips) > 0 ? format("ip.src in {%s}", join(" ", [for ip in var.allowed_ips : format("\"%s\"", ip)])) : "",
+      length(var.allowed_regions) > 0 ? format("ip.geoip.country in {%s}", join(" ", [for region in var.allowed_regions : format("\"%s\"", region)])) : ""
+    ]))
     description = "Allow bypass for maintenance mode from specific IPs and regions"
     enabled     = true
   }
