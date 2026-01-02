@@ -35,7 +35,11 @@ output "maintenance_status" {
 
 output "maintenance_page_url" {
   description = "URL to access the maintenance page directly"
-  value       = var.enabled ? "https://maintenance-status-${var.environment}.${replace(var.worker_route, "/*", "")}" : "Maintenance mode disabled"
+  value = var.enabled ? format(
+    "https://maintenance-status-%s.%s",
+    var.environment,
+    trim(replace(replace(var.worker_route, "*.", ""), "/*", ""), "/")
+  ) : "Maintenance mode disabled"
 }
 
 output "dns_record_id" {
