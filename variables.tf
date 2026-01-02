@@ -87,9 +87,9 @@ variable "schedules" {
   validation {
     condition = alltrue([
       for schedule in var.schedules :
-      can(regex("^[0-9*,/-]+ [0-9*,/-]+ [0-9*,/-]+ [0-9*,/-]+ [0-9*,/-]+", schedule.cron))
+      can(regex("^([0-9*,/-]+|\\*) ([0-9*,/-]+|\\*) ([0-9*,/-]+|\\*) ([0-9*,/-]+|\\*) ([0-9*,/-]+|[A-Z]{3}|\\*)$", schedule.cron))
     ])
-    error_message = "Cron expressions must be in valid format: 'minute hour day month weekday'"
+    error_message = "Cron expressions must be in valid format: 'minute hour day month weekday' (e.g., '0 2 * * SUN')"
   }
 }
 

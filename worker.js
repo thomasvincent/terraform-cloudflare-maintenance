@@ -32,10 +32,16 @@ async function handleRequest(request) {
     return fetch(request)
   }
 
+  // Validate and sanitize logo URL to prevent XSS
+  let logoHtml = ''
+  if (LOGO_URL && isValidHttpsUrl(LOGO_URL)) {
+    const sanitizedUrl = LOGO_URL.replace(/['"<>]/g, '')
+    logoHtml = `<img src="${sanitizedUrl}" alt="Logo" style="max-width: 200px; margin-bottom: 1rem;">`
+  }
+  
   // Alright, time to show everyone the "We'll be right back" page
   // This HTML is nicer than the default 503 error at least
   const customStyles = CUSTOM_CSS || ''
-  const logoHtml = LOGO_URL ? `<img src="${LOGO_URL}" alt="Logo" style="max-width: 200px; margin-bottom: 1rem;">` : ''
   
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -123,5 +129,14 @@ function getMaintenanceWindowMessage() {
     return `<p style="font-size: 0.9rem; color: #888;">Expected completion: ${end.toUTCString()}</p>`
   } catch (e) {
     return ''
+  }
+}
+
+function isValidHttpsUrl(url) {
+  try {
+    const parsedUrl = new URL(url)
+    return parsedUrl.protocol === 'https:'
+  } catch (e) {
+    return false
   }
 }
