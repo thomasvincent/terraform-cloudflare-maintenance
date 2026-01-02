@@ -35,11 +35,15 @@ output "maintenance_status" {
 
 output "maintenance_page_url" {
   description = "URL to access the maintenance page directly"
-  value = var.enabled ? format(
-    "https://maintenance-status-%s.%s",
-    var.environment,
-    trim(replace(replace(var.worker_route, "*.", ""), "/*", ""), "/")
-  ) : "Maintenance mode disabled"
+  value       = var.enabled ? local.maintenance_status_url : "Maintenance mode disabled"
+}
+
+locals {
+  # Extract clean domain from worker_route pattern (e.g., "*.example.com/*" -> "example.com")
+  clean_domain = trim(replace(replace(var.worker_route, "*.", ""), "/*", ""), "/")
+  
+  # Construct maintenance status page URL
+  maintenance_status_url = format("https://maintenance-status-%s.%s", var.environment, local.clean_domain)
 }
 
 output "dns_record_id" {

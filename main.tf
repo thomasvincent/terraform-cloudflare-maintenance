@@ -2,6 +2,21 @@ provider "cloudflare" {
   api_token = var.cloudflare_api_token
 }
 
+# Local variables for IP and region bypass expressions
+locals {
+  # Format IP addresses for Cloudflare firewall expression
+  ip_bypass_expression = length(var.allowed_ips) > 0 ? format(
+    "ip.src in {%s}",
+    join(" ", [for ip in var.allowed_ips : format("\"%s\"", ip)])
+  ) : ""
+
+  # Format country codes for Cloudflare firewall expression
+  region_bypass_expression = length(var.allowed_regions) > 0 ? format(
+    "ip.geoip.country in {%s}",
+    join(" ", [for region in var.allowed_regions : format("\"%s\"", region)])
+  ) : ""
+}
+
 # Deploy the maintenance worker
 resource "cloudflare_workers_script" "maintenance" {
   account_id = var.cloudflare_account_id
@@ -93,10 +108,7 @@ resource "cloudflare_ruleset" "maintenance_bypass" {
     action_parameters {
       phases = ["http_request_firewall_managed", "http_ratelimit", "http_request_firewall_custom"]
     }
-    expression = join(" or ", compact([
-      length(var.allowed_ips) > 0 ? format("ip.src in {%s}", join(" ", [for ip in var.allowed_ips : format("\"%s\"", ip)])) : "",
-      length(var.allowed_regions) > 0 ? format("ip.geoip.country in {%s}", join(" ", [for region in var.allowed_regions : format("\"%s\"", region)])) : ""
-    ]))
+    expression  = join(" or ", compact([local.ip_bypass_expression, local.region_bypass_expression]))
     description = "Allow bypass for maintenance mode from specific IPs and regions"
     enabled     = true
   }
