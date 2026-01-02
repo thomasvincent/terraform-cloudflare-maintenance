@@ -5,9 +5,13 @@ addEventListener('fetch', event => {
 })
 
 async function handleRequest(request) {
+  // Check if we're in a scheduled maintenance window
+  const now = new Date()
+  const inMaintenanceWindow = checkMaintenanceWindow(now)
+  
   // First, check if we're actually in maintenance mode
-  // If not, let traffic through like nothing happened
-  if (!MAINTENANCE_ENABLED || MAINTENANCE_ENABLED === 'false') {
+  // If not and not in a maintenance window, let traffic through
+  if ((!MAINTENANCE_ENABLED || MAINTENANCE_ENABLED === 'false') && !inMaintenanceWindow) {
     return fetch(request)
   }
 
@@ -20,8 +24,19 @@ async function handleRequest(request) {
     return fetch(request)
   }
 
+  // Check if the request is from an allowed region
+  const country = request.cf?.country
+  const allowedRegions = JSON.parse(ALLOWED_REGIONS || '[]')
+  if (country && allowedRegions.includes(country)) {
+    // Region is allowed, bypass maintenance
+    return fetch(request)
+  }
+
   // Alright, time to show everyone the "We'll be right back" page
   // This HTML is nicer than the default 503 error at least
+  const customStyles = CUSTOM_CSS || ''
+  const logoHtml = LOGO_URL ? `<img src="${LOGO_URL}" alt="Logo" style="max-width: 200px; margin-bottom: 1rem;">` : ''
+  
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,12 +65,15 @@ async function handleRequest(request) {
     h1 { color: #333; margin-bottom: 1rem; }
     p { color: #666; line-height: 1.6; }
     .contact { margin-top: 2rem; font-size: 0.9rem; color: #999; }
+    ${customStyles}
   </style>
 </head>
 <body>
   <div class="container">
+    ${logoHtml}
     <h1>${MAINTENANCE_TITLE || 'Maintenance Mode'}</h1>
     <p>${MAINTENANCE_MESSAGE || 'We are currently performing scheduled maintenance. We will be back shortly.'}</p>
+    ${getMaintenanceWindowMessage()}
     ${CONTACT_EMAIL ? `<p class="contact">Contact: <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></p>` : ''}
   </div>
 </body>
@@ -71,4 +89,39 @@ async function handleRequest(request) {
       'Retry-After': '3600' // Try again in an hour (fingers crossed we're done by then)
     }
   })
+}
+
+function checkMaintenanceWindow(now) {
+  // Check if we're within a scheduled maintenance window
+  const startTime = MAINTENANCE_WINDOW_START
+  const endTime = MAINTENANCE_WINDOW_END
+  
+  if (!startTime || !endTime) {
+    return false
+  }
+  
+  try {
+    const start = new Date(startTime)
+    const end = new Date(endTime)
+    return now >= start && now <= end
+  } catch (e) {
+    // Invalid dates, ignore the maintenance window
+    return false
+  }
+}
+
+function getMaintenanceWindowMessage() {
+  const startTime = MAINTENANCE_WINDOW_START
+  const endTime = MAINTENANCE_WINDOW_END
+  
+  if (!startTime || !endTime) {
+    return ''
+  }
+  
+  try {
+    const end = new Date(endTime)
+    return `<p style="font-size: 0.9rem; color: #888;">Expected completion: ${end.toUTCString()}</p>`
+  } catch (e) {
+    return ''
+  }
 }

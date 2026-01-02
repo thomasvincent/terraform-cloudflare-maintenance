@@ -4,9 +4,9 @@ provider "cloudflare" {
 
 # Deploy the maintenance worker
 resource "cloudflare_workers_script" "maintenance" {
-  account_id  = var.cloudflare_account_id
-  name        = "maintenance-page-worker"
-  content     = file("${path.module}/worker.js")
+  account_id = var.cloudflare_account_id
+  name       = "maintenance-page-worker"
+  content    = file("${path.module}/worker.js")
 
   # Environment variables for the worker
   plain_text_binding {
@@ -29,9 +29,34 @@ resource "cloudflare_workers_script" "maintenance" {
     text = var.contact_email
   }
 
+  plain_text_binding {
+    name = "CUSTOM_CSS"
+    text = var.custom_css
+  }
+
+  plain_text_binding {
+    name = "LOGO_URL"
+    text = var.logo_url
+  }
+
+  plain_text_binding {
+    name = "MAINTENANCE_WINDOW_START"
+    text = var.maintenance_window != null ? var.maintenance_window.start_time : ""
+  }
+
+  plain_text_binding {
+    name = "MAINTENANCE_WINDOW_END"
+    text = var.maintenance_window != null ? var.maintenance_window.end_time : ""
+  }
+
   secret_text_binding {
     name = "ALLOWED_IPS"
     text = jsonencode(var.allowed_ips)
+  }
+
+  secret_text_binding {
+    name = "ALLOWED_REGIONS"
+    text = jsonencode(var.allowed_regions)
   }
 }
 
@@ -41,4 +66,42 @@ resource "cloudflare_workers_route" "maintenance" {
   zone_id     = var.cloudflare_zone_id
   pattern     = var.worker_route
   script_name = cloudflare_workers_script.maintenance.name
+}
+
+# Create a DNS record for maintenance status page
+resource "cloudflare_record" "maintenance_status" {
+  count   = var.enabled ? 1 : 0
+  zone_id = var.cloudflare_zone_id
+  name    = "maintenance-status-${var.environment}"
+  content = "100::"
+  type    = "AAAA"
+  proxied = true
+  ttl     = 1
+  comment = "Maintenance status page for ${var.environment} environment"
+}
+
+# Create a ruleset for IP and region-based bypass
+resource "cloudflare_ruleset" "maintenance_bypass" {
+  count   = var.enabled && (length(var.allowed_ips) > 0 || length(var.allowed_regions) > 0) ? 1 : 0
+  zone_id = var.cloudflare_zone_id
+  name    = "maintenance-bypass-${var.environment}"
+  kind    = "zone"
+  phase   = "http_request_firewall_custom"
+
+  rules {
+    action      = "skip"
+    action_parameters {
+      phases = ["http_request_firewall_managed", "http_ratelimit", "http_request_firewall_custom"]
+    }
+    expression  = join(" or ", concat(
+      length(var.allowed_ips) > 0 ? [
+        format("(ip.src in {%s})", join(" ", [for ip in var.allowed_ips : format("\"%s\"", ip)]))
+      ] : [],
+      length(var.allowed_regions) > 0 ? [
+        format("(ip.geoip.country in {%s})", join(" ", [for region in var.allowed_regions : format("\"%s\"", region)]))
+      ] : []
+    ))
+    description = "Allow bypass for maintenance mode from specific IPs and regions"
+    enabled     = true
+  }
 }
