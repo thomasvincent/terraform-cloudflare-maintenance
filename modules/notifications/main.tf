@@ -13,17 +13,18 @@ terraform {
 
 # Parse notification URLs and send notifications
 resource "null_resource" "notification" {
-  count = length(var.notification_urls)
+  for_each = { for idx, url in var.notification_urls : idx => url if url != "" }
 
   triggers = {
     maintenance_status = var.maintenance_status
     schedule_name      = var.schedule_name
     timestamp          = timestamp()
+    notification_url   = each.value
   }
 
   provisioner "local-exec" {
     command = <<-EOT
-      ${local.notification_scripts[count.index]}
+      ${local.notification_commands[each.key]}
     EOT
   }
 
@@ -33,27 +34,20 @@ resource "null_resource" "notification" {
 }
 
 locals {
-  # Parse notification URLs and create appropriate curl commands
-  notification_scripts = [
-    for url in var.notification_urls :
-    startswith(url, "slack://") ? local.slack_notification :
-    startswith(url, "pagerduty://") ? local.pagerduty_notification :
-    startswith(url, "webhook://") ? local.webhook_notification :
-    "echo 'Unknown notification type: ${url}'"
-  ]
+  # Create notification commands for each URL
+  notification_commands = {
+    for idx, url in var.notification_urls :
+    idx => (
+      startswith(url, "slack://") ? replace(local.slack_notification_template, "{{URL}}", replace(url, "slack://", "https://hooks.slack.com/services/")) :
+      startswith(url, "pagerduty://") ? replace(local.pagerduty_notification_template, "{{KEY}}", replace(url, "pagerduty://", "")) :
+      startswith(url, "webhook://") ? replace(local.webhook_notification_template, "{{URL}}", replace(url, "webhook://", "")) :
+      "echo 'Unknown notification type: ${url}'"
+    )
+  }
 
-  # Extract webhook URL from slack://webhook_url format
-  slack_webhook_url = length([for url in var.notification_urls : url if startswith(url, "slack://")]) > 0 ? replace([for url in var.notification_urls : url if startswith(url, "slack://")][0], "slack://", "https://hooks.slack.com/services/") : ""
-
-  # Extract PagerDuty integration key
-  pagerduty_key = length([for url in var.notification_urls : url if startswith(url, "pagerduty://")]) > 0 ? replace([for url in var.notification_urls : url if startswith(url, "pagerduty://")][0], "pagerduty://", "") : ""
-
-  # Extract generic webhook URL
-  webhook_url = length([for url in var.notification_urls : url if startswith(url, "webhook://")]) > 0 ? replace([for url in var.notification_urls : url if startswith(url, "webhook://")][0], "webhook://", "") : ""
-
-  # Slack notification using curl
-  slack_notification = local.slack_webhook_url != "" ? <<-EOT
-    curl -X POST '${local.slack_webhook_url}' \
+  # Slack notification template
+  slack_notification_template = <<-EOT
+    curl -X POST '{{URL}}' \
       -H 'Content-Type: application/json' \
       -d '{
         "text": "🔧 Maintenance ${var.maintenance_status}",
@@ -89,14 +83,13 @@ locals {
         ]
       }'
   EOT
-  : "echo 'No Slack webhook configured'"
 
-  # PagerDuty notification
-  pagerduty_notification = local.pagerduty_key != "" ? <<-EOT
+  # PagerDuty notification template
+  pagerduty_notification_template = <<-EOT
     curl -X POST 'https://events.pagerduty.com/v2/enqueue' \
       -H 'Content-Type: application/json' \
       -d '{
-        "routing_key": "${local.pagerduty_key}",
+        "routing_key": "{{KEY}}",
         "event_action": "trigger",
         "payload": {
           "summary": "Maintenance ${var.maintenance_status}: ${var.schedule_name}",
@@ -112,11 +105,10 @@ locals {
         }
       }'
   EOT
-  : "echo 'No PagerDuty key configured'"
 
-  # Generic webhook notification
-  webhook_notification = local.webhook_url != "" ? <<-EOT
-    curl -X POST '${local.webhook_url}' \
+  # Generic webhook notification template
+  webhook_notification_template = <<-EOT
+    curl -X POST '{{URL}}' \
       -H 'Content-Type: application/json' \
       -d '{
         "status": "${var.maintenance_status}",
@@ -128,5 +120,4 @@ locals {
         }
       }'
   EOT
-  : "echo 'No webhook URL configured'"
 }
