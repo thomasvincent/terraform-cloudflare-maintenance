@@ -115,28 +115,39 @@ variable "logo_url" {
   default     = ""
 }
 
-# Note: rate_limit has been temporarily deprecated until we update to use 
-# the newer Cloudflare rulesets API. Commented out but keeping the definition
-# for future reference.
-# variable "rate_limit" {
-#   description = "Rate limiting configuration for the maintenance page"
-#   type = object({
-#     enabled   = bool
-#     threshold = number
-#     period    = number
-#     action    = string
-#   })
-#   default = {
-#     enabled   = false
-#     threshold = 100
-#     period    = 60
-#     action    = "block"
-#   }
-#   validation {
-#     condition     = contains(["block", "challenge", "js_challenge", "managed_challenge"], var.rate_limit.action)
-#     error_message = "Rate limit action must be one of: block, challenge, js_challenge, managed_challenge."
-#   }
-# }
+variable "rate_limit" {
+  description = "Rate limiting configuration using Cloudflare Ruleset Rate Limiting"
+  type = object({
+    enabled               = bool
+    requests_per_period   = number
+    period                = number
+    action                = string
+    mitigation_timeout    = number
+    counting_expression   = optional(string)
+    requests_to_origin    = optional(bool)
+  })
+  default = {
+    enabled               = false
+    requests_per_period   = 100
+    period                = 60
+    action                = "block"
+    mitigation_timeout    = 600
+    counting_expression   = null
+    requests_to_origin    = false
+  }
+  validation {
+    condition     = contains(["block", "challenge", "js_challenge", "managed_challenge", "log"], var.rate_limit.action)
+    error_message = "Rate limit action must be one of: block, challenge, js_challenge, managed_challenge, log."
+  }
+  validation {
+    condition     = var.rate_limit.period >= 10 && var.rate_limit.period <= 86400
+    error_message = "Rate limit period must be between 10 and 86400 seconds."
+  }
+  validation {
+    condition     = var.rate_limit.mitigation_timeout >= 60 && var.rate_limit.mitigation_timeout <= 86400
+    error_message = "Mitigation timeout must be between 60 and 86400 seconds."
+  }
+}
 
 variable "api_key" {
   description = "Custom API key for maintenance API (will be generated randomly if not provided)"

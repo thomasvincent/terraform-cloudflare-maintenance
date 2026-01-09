@@ -132,12 +132,30 @@ resource "cloudflare_ruleset" "maintenance_bypass" {
   ]
 }
 
-# Rate limiting feature has been temporarily disabled
-# 
-# The Cloudflare rate_limit resource is deprecated and we'll implement
-# the newer Cloudflare Ruleset Rate Limiting in a future update when the 
-# provider version fully supports it. For now, we've removed the resource
-# to ensure the module validates properly.
-#
-# If you need rate limiting, please consider using a separate Cloudflare Ruleset
-# outside of this module until this functionality is restored.
+# Rate limiting using modern Cloudflare Ruleset API
+# Replaces deprecated cloudflare_rate_limit resource
+resource "cloudflare_ruleset" "rate_limit" {
+  count       = var.enabled && var.rate_limit.enabled ? 1 : 0
+  zone_id     = var.cloudflare_zone_id
+  name        = "Maintenance Page Rate Limiting"
+  description = "Rate limiting for maintenance page to prevent abuse"
+  kind        = "zone"
+  phase       = "http_ratelimit"
+
+  rules = [
+    {
+      action      = var.rate_limit.action
+      description = "Rate limit requests to maintenance page"
+      enabled     = true
+      expression  = var.rate_limit.counting_expression != null ? var.rate_limit.counting_expression : "(http.request.uri.path contains \"/\")"
+
+      ratelimit = {
+        characteristics     = ["cf.colo.id", "ip.src"]
+        period              = var.rate_limit.period
+        requests_per_period = var.rate_limit.requests_per_period
+        mitigation_timeout  = var.rate_limit.mitigation_timeout
+        requests_to_origin  = var.rate_limit.requests_to_origin != null ? var.rate_limit.requests_to_origin : false
+      }
+    }
+  ]
+}
