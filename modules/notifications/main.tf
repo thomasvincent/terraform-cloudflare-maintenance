@@ -26,6 +26,9 @@ resource "null_resource" "notification" {
     command = <<-EOT
       ${local.notification_commands[each.key]}
     EOT
+    environment = {
+      WEBHOOK_URL = local.resolved_urls[each.key]
+    }
   }
 
   lifecycle {
@@ -39,18 +42,28 @@ locals {
   pagerduty_urls  = [for url in var.notification_urls : url if startswith(url, "pagerduty://")]
   webhook_urls    = [for url in var.notification_urls : url if startswith(url, "webhook://")]
 
+  # Resolve protocol-prefixed URLs to actual endpoint URLs
+  resolved_urls = {
+    for idx, url in var.notification_urls :
+    idx => contains(local.slack_urls, url) ? replace(url, "slack://", "https://hooks.slack.com/services/") :
+    contains(local.pagerduty_urls, url) ? replace(url, "pagerduty://", "") :
+    contains(local.webhook_urls, url) ? replace(url, "webhook://", "") :
+    url
+  }
+
   # Create notification commands for each URL with proper type detection
+  # URLs are passed via WEBHOOK_URL environment variable to prevent command injection
   notification_commands = {
     for idx, url in var.notification_urls :
-    idx => contains(local.slack_urls, url) ? replace(local.slack_notification_template, "{{URL}}", replace(url, "slack://", "https://hooks.slack.com/services/")) :
-    contains(local.pagerduty_urls, url) ? replace(local.pagerduty_notification_template, "{{KEY}}", replace(url, "pagerduty://", "")) :
-    contains(local.webhook_urls, url) ? replace(local.webhook_notification_template, "{{URL}}", replace(url, "webhook://", "")) :
-    "echo 'Unknown notification type: ${url}'"
+    idx => contains(local.slack_urls, url) ? local.slack_notification_template :
+    contains(local.pagerduty_urls, url) ? local.pagerduty_notification_template :
+    contains(local.webhook_urls, url) ? local.webhook_notification_template :
+    "echo 'Unknown notification type'"
   }
 
   # Slack notification template
   slack_notification_template = <<-EOT
-    curl -X POST '{{URL}}' \
+    curl -X POST "$WEBHOOK_URL" \
       -H 'Content-Type: application/json' \
       -d '{
         "text": "🔧 Maintenance ${var.maintenance_status}",
@@ -88,11 +101,12 @@ locals {
   EOT
 
   # PagerDuty notification template
+  # WEBHOOK_URL contains the routing key, passed via environment variable
   pagerduty_notification_template = <<-EOT
     curl -X POST 'https://events.pagerduty.com/v2/enqueue' \
       -H 'Content-Type: application/json' \
-      -d '{
-        "routing_key": "{{KEY}}",
+      -d "$(jq -n --arg key "$WEBHOOK_URL" '{
+        "routing_key": $key,
         "event_action": "trigger",
         "payload": {
           "summary": "Maintenance ${var.maintenance_status}: ${var.schedule_name}",
@@ -106,12 +120,12 @@ locals {
             "end_time": "${var.maintenance_window.end_time}"
           }
         }
-      }'
+      }')"
   EOT
 
   # Generic webhook notification template
   webhook_notification_template = <<-EOT
-    curl -X POST '{{URL}}' \
+    curl -X POST "$WEBHOOK_URL" \
       -H 'Content-Type: application/json' \
       -d '{
         "status": "${var.maintenance_status}",
